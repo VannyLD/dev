@@ -18,6 +18,19 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
+        /* NEW (THE FIX): Dedicated div for the animated background */
+        #background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2; /* Placed behind all content, including bubbles */
+            background: linear-gradient(-45deg, #1a184a, #070527, #2a276c, #3c3893);
+            background-size: 400% 400%;
+            animation: gradient-move 15s ease infinite;
+        }
+
         /* Gradient Background Animation */
         @keyframes gradient-move {
             0% { background-position: 0% 50%; }
@@ -25,30 +38,23 @@
             100% { background-position: 0% 50%; }
         }
 
-        .animated-gradient-bg {
-            background: linear-gradient(-45deg, #1a184a, #070527, #2a276c, #3c3893);
-            background-size: 400% 400%;
-            animation: gradient-move 15s ease infinite;
-        }
-
-        /* General Body Styles */
+        /* General Body Styles - Background properties removed */
         body {
             font-family: 'Inter', sans-serif;
-            overflow-x: hidden; /* Prevent horizontal scrollbars */
             cursor: none; /* Hide the default cursor */
+            background-color: #070527; /* Dark fallback color */
         }
         
-        /* UPDATED: Golden mouse-following light */
+        /* Golden mouse-following light */
         #cursor-light {
             position: fixed;
-            width: 35px; /* Slightly larger for better visibility */
+            width: 35px;
             height: 35px;
             border-radius: 50%;
-            /* A more focused, brighter gradient */
             background: radial-gradient(circle, rgba(255, 215, 0, 0.7) 0%, rgba(255, 215, 0, 0.2) 70%, rgba(255, 215, 0, 0) 100%);
             pointer-events: none;
             transition: transform 0.1s ease-out;
-            z-index: 1000; /* Ensure it's on top */
+            z-index: 1000;
         }
 
         /* Container for mouse particles */
@@ -67,9 +73,9 @@
         .particle {
             position: absolute;
             border-radius: 50%;
-            opacity: 0; /* Start invisible, animation will fade it in */
+            opacity: 0;
             animation: particle-fade 1.5s ease-out forwards;
-            mix-blend-mode: screen; /* Additive blending for a glowing effect */
+            mix-blend-mode: screen;
         }
 
         .golden {
@@ -79,13 +85,13 @@
 
         .star {
             background: rgba(255, 255, 255, 0.9);
-            width: 3px; /* Explicitly set size for stars */
+            width: 3px;
             height: 3px;
             box-shadow: 0 0 3px rgba(255, 255, 255, 0.7);
             border-radius: 50%;
         }
 
-        /* Animation for particles fading out as they move */
+        /* Animation for particles fading out */
         @keyframes particle-fade {
             0% {
                 transform: translate(var(--x-start), var(--y-start)) scale(1) rotate(0deg);
@@ -105,7 +111,7 @@
             overflow: hidden;
             top: 0;
             left: 0;
-            z-index: -1; /* Place behind content */
+            z-index: -1; /* Placed behind content but in front of gradient */
         }
 
         .bubble {
@@ -160,7 +166,10 @@
 
     </style>
 </head>
-<body class="animated-gradient-bg text-white antialiased flex flex-col min-h-screen relative">
+<body class="text-white antialiased flex flex-col min-h-screen relative">
+    
+    <div id="background-animation"></div>
+
     <div id="cursor-light"></div>
     <div id="particle-container"></div>
     <div class="bubbles"></div>
@@ -795,14 +804,12 @@
                     particle.style.width = `${size}px`;
                     particle.style.height = `${size}px`;
 
-                    const angle = Math.random() * Math.PI * 2;
-                    const startX = x + (Math.random() - 0.5) * 10;
-                    const startY = y + (Math.random() - 0.5) * 10;
                     particle.style.left = `${x}px`;
                     particle.style.top = `${y}px`;
                     particle.style.setProperty('--x-start', '0px');
                     particle.style.setProperty('--y-start', '0px');
                     
+                    const angle = Math.random() * Math.PI * 2;
                     const travelDistance = Math.random() * 40 + 20;
                     const endX = Math.cos(angle) * travelDistance;
                     const endY = Math.sin(angle) * travelDistance;
