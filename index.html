@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Max Tools</title>
+    <link rel="icon" type="image/png" href="image/favo.svg">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* Gradient Background Animation */
+        @keyframes gradient-move {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .animated-gradient-bg {
+            background: linear-gradient(-45deg, #1a184a, #070527, #2a276c, #3c3893);
+            background-size: 400% 400%;
+            animation: gradient-move 15s ease infinite;
+        }
+
+        /* General Body Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden; /* Prevent horizontal scrollbars */
+            cursor: none; /* Hide the default cursor */
+        }
+        
+        /* UPDATED: Golden mouse-following light */
+        #cursor-light {
+            position: fixed;
+            width: 35px; /* Slightly larger for better visibility */
+            height: 35px;
+            border-radius: 50%;
+            /* A more focused, brighter gradient */
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.7) 0%, rgba(255, 215, 0, 0.2) 70%, rgba(255, 215, 0, 0) 100%);
+            pointer-events: none;
+            transition: transform 0.1s ease-out;
+            z-index: 1000; /* Ensure it's on top */
+        }
+
+        /* Container for mouse particles */
+        #particle-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 999;
+        }
+
+        /* Styling for individual particles */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0; /* Start invisible, animation will fade it in */
+            animation: particle-fade 1.5s ease-out forwards;
+            mix-blend-mode: screen; /* Additive blending for a glowing effect */
+        }
+
+        .golden {
+            background: rgba(255, 215, 0, 0.8);
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+        }
+
+        .star {
+            background: rgba(255, 255, 255, 0.9);
+            width: 3px; /* Explicitly set size for stars */
+            height: 3px;
+            box-shadow: 0 0 3px rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+        }
+
+        /* Animation for particles fading out as they move */
+        @keyframes particle-fade {
+            0% {
+                transform: translate(var(--x-start), var(--y-start)) scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--x-end), var(--y-end)) scale(0.1) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Bubble Animation */
+        .bubbles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            top: 0;
+            left: 0;
+            z-index: -1; /* Place behind content */
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: rise 15s infinite;
+            opacity: 0;
+        }
+
+        @keyframes rise {
+            0% { transform: translateY(0) scale(1); opacity: 0.7; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-120vh) scale(0.5); opacity: 0; }
+        }
+
+        /* Page Content Fade-in Animation */
+        .page-content.fade-in {
+            animation: fadeInAnimation 0.7s ease-in-out forwards;
+        }
+        
+        @keyframes fadeInAnimation {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 3D Flip Card Styles */
+        .flip-card { background-color: transparent; width: 100%; aspect-ratio: 4 / 6; perspective: 1000px; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.8s ease-in-out; transform-style: preserve-3d; }
+        .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 1rem; overflow: hidden; }
+        .flip-card-front { background-color: rgba(26, 24, 74, 0.5); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px); }
+        .flip-card-back { background-color: rgba(26, 24, 74, 0.5); color: white; transform: rotateY(180deg); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1rem; border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px); }
+
+        /* Smooth Slider Transitions */
+        .slider-track {
+            transition: transform 0.7s ease-in-out;
+        }
+        
+        /* Smooth Marquee Scroll Animation */
+        .marquee-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee-scroll 60s linear infinite;
+        }
+
+        @keyframes marquee-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+    </style>
+</head>
+<body class="animated-gradient-bg text-white antialiased flex flex-col min-h-screen relative">
+    <div id="cursor-light"></div>
+    <div id="particle-container"></div>
+    <div class="bubbles"></div>
+
+
+    <header class="fixed top-0 left-0 right-0 z-50 p-4">
+        <div class="container mx-auto max-w-6xl">
+            <nav
+                class="flex items-center justify-between bg-white/10 backdrop-blur-lg border border-white/20 rounded-full py-3 px-6 shadow-lg">
+                <a href="#" id="logo-link" class="flex items-center space-x-2 cursor-pointer">
+                    <img src="image/logo.svg" alt="Logo" class="w-8 h-8"
+                        onerror="this.onerror=null;this.src='https://placehold.co/32x32/1a184a/ffffff?text=DMT';">
+                    <span class="text-xl font-bold tracking-wide">Dev Max Tools</span>
+                </a>
+                <div class="hidden md:flex items-center space-x-8 text-sm font-medium">
+                    <a href="#" data-page="page-phone" class="nav-link hover:text-blue-300 transition-colors">Chrome</a>
+                    <a href="#" data-page="page-ldplayer"
+                        class="nav-link hover:text-blue-300 transition-colors">LD-Player</a>
+                    <a href="#" data-page="page-download" class="nav-link hover:text-blue-300 transition-colors">Softwares</a>
+                    <a href="#" data-page="page-contact"
+                        class="nav-link hover:text-blue-300 transition-colors">Contact</a>
+                    <a href="#" data-page="page-videos"
+                        class="nav-link hover:text-blue-300 transition-colors">Videos</a>
+                </div>
+                <a href="#" data-page="page-download"
+                    class="nav-link hidden md:inline-flex items-center gap-1 bg-white text-gray-900 font-semibold px-5 py-2 rounded-full hover:bg-gray-200 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M5 20h14v-2H5v2zm7-18v12l5-5h-3V4h-4v5H7l5 5V2z" />
+                    </svg>
+                    Download
+                </a>
+
+                <button id="mobile-menu-button" class="md:hidden p-2 rounded-full hover:bg-white/20">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </nav>
+
+            <div id="mobile-menu" class="hidden md:hidden bg-white/10 backdrop-blur-lg rounded-xl mt-2 p-4 text-center">
+                <div class="flex flex-col space-y-4">
+                    <a href="#" data-page="page-phone"
+                        class="nav-link block py-2 hover:text-blue-300 transition-colors">Chrome</a>
+                    <a href="#" data-page="page-ldplayer"
+                        class="nav-link block py-2 hover:text-blue-300 transition-colors">LD-Player</a>
+                    <a href="#" data-page="page-download" class="nav-link block py-2 hover:text-blue-300 transition-colors">Softwares</a>
+                    <a href="#" data-page="page-contact"
+                        class="nav-link block py-2 hover:text-blue-300 transition-colors">Contact</a>
+                    <a href="#" data-page="page-videos"
+                        class="nav-link block py-2 hover:text-blue-300 transition-colors">Videos</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow pt-32 pb-20">
+        <div class="container mx-auto max-w-6xl px-4">
+
+            <div id="page-home" class="page-content hidden">
+                <section class="mb-24 text-center">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-4 leading-tight">The Future of Software is Here</h1>
+                    <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-10">Experience unparalleled
+                        performance and design with our next-generation software suite.</p>
+                    <div id="slider"
+                        class="relative w-full max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden aspect-video">
+                        <div class="slider-track flex">
+                            <div class="w-full flex-shrink-0"><img src="image/s1.png" alt="Software Screenshot 1"
+                                    class="w-full h-full object-cover"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/1280x720/1a184a/ffffff?text=Slide+1';">
+                            </div>
+                            <div class="w-full flex-shrink-0"><img src="image/s1.png" alt="Software Screenshot 2"
+                                    class="w-full h-full object-cover"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/1280x720/1a184a/ffffff?text=Slide+2';">
+                            </div>
+                            <div class="w-full flex-shrink-0"><img src="image/s1.png" alt="Software Screenshot 3"
+                                    class="w-full h-full object-cover"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/1280x720/1a184a/ffffff?text=Slide+3';">
+                            </div>
+                        </div>
+                        <div id="slider-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3"></div>
+                    </div>
+                </section>
+                <section id="features" class="mb-24">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div
+                            class="bg-white/5 p-6 rounded-2xl border border-white/10 transform hover:-translate-y-2 transition-transform duration-300 ease-in-out">
+                            <img src="image/f1.png" alt="Feature A" class="rounded-lg mb-4 w-full h-48 object-cover"
+                                onerror="this.onerror=null;this.src='https://placehold.co/600x400/3d3b6e/ffffff?text=Feature';">
+                            <h3 class="text-xl font-bold mb-2">Intuitive Interface</h3>
+                            <p class="text-gray-400 mb-4">A beautifully crafted user experience that feels natural and
+                                powerful from the first click.</p><a href="#"
+                                class="text-blue-400 font-semibold hover:text-blue-300 transition-colors">Learn More
+                                &rarr;</a>
+                        </div>
+                        <div
+                            class="bg-white/5 p-6 rounded-2xl border border-white/10 transform hover:-translate-y-2 transition-transform duration-300 ease-in-out">
+                            <img src="image/f1.png" alt="Feature B" class="rounded-lg mb-4 w-full h-48 object-cover"
+                                onerror="this.onerror=null;this.src='https://placehold.co/600x400/3d3b6e/ffffff?text=Feature';">
+                            <h3 class="text-xl font-bold mb-2">Blazing Fast Speed</h3>
+                            <p class="text-gray-400 mb-4">Engineered for performance, our software handles complex tasks
+                                in the blink of an eye.</p><a href="#"
+                                class="text-blue-400 font-semibold hover:text-blue-300 transition-colors">See Benchmarks
+                                &rarr;</a>
+                        </div>
+                        <div
+                            class="bg-white/5 p-6 rounded-2xl border border-white/10 transform hover:-translate-y-2 transition-transform duration-300 ease-in-out">
+                            <img src="image/f1.png" alt="Feature C" class="rounded-lg mb-4 w-full h-48 object-cover"
+                                onerror="this.onerror=null;this.src='https://placehold.co/600x400/3d3b6e/ffffff?text=Feature';">
+                            <h3 class="text-xl font-bold mb-2">Cross-Platform Sync</h3>
+                            <p class="text-gray-400 mb-4">Work seamlessly across all your devices with real-time cloud
+                                synchronization.</p><a href="#"
+                                class="text-blue-400 font-semibold hover:text-blue-300 transition-colors">Explore Sync
+                                &rarr;</a>
+                        </div>
+                    </div>
+                </section>
+                <section class="text-center mb-24">
+                    <h2 class="text-3xl font-bold mb-4">See It In Action</h2>
+                    <p class="text-lg text-gray-300 max-w-2xl mx-auto mb-8">Watch our official launch trailer and see
+                        what makes our software so special.</p>
+                    <div class="relative w-full max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden aspect-video">
+                        <iframe class="absolute top-0 left-0 w-full h-full"
+                            src="https://www.youtube.com/embed/mmjsx64X8yo?si=_eGIxGXR5sIolXNJ"
+                            title="YouTube video player" frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen></iframe>
+                    </div>
+                </section>
+
+
+                <section class="text-center mb-24">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-4 leading-tight">Contact the Founder</h1>
+                    <p class="text-lg text-gray-300 max-w-2xl mx-auto mb-12">Connect directly with the vision behind the
+                        project.</p>
+                    <div class="flex justify-center mb-8">
+                        <div class="w-64">
+                            <div class="flip-card">
+                                <div class="flip-card-inner">
+                                    <div class="flip-card-front"><img src="image/dev.png" alt="Founder"
+                                            class="w-full h-full object-cover"
+                                            onerror="this.onerror=null;this.src='https://placehold.co/400x600/ffffff/070527?text=Founder';">
+                                    </div>
+                                    <div class="flip-card-back">
+                                        <h4 class="text-xl font-bold">Dev Max Tools</h4>
+                                        <p class="text-gray-400">Founder & Developer</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-center space-x-6">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i
+                                class="fab fa-telegram fa-2x"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i
+                                class="fab fa-facebook fa-2x"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i
+                                class="fab fa-tiktok fa-2x"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i
+                                class="fab fa-youtube fa-2x"></i></a>
+                    </div>
+                </section>
+
+                <section class="py-8 bg-white/5 rounded-2xl overflow-hidden">
+                    <div class="marquee whitespace-nowrap">
+                        <div class="marquee-content text-2xl font-bold">
+                            <span class="mx-4">INNOVATIVE SOLUTIONS</span> &bull;
+                            <span class="mx-4">MODERN DESIGN</span> &bull;
+                            <span class="mx-4">HIGH PERFORMANCE</span> &bull;
+                            <span class="mx-4">USER FOCUSED</span> &bull;
+                            <span class="mx-4">ALWAYS EVOLVING</span> &bull;
+                            <span class="mx-4">FUTURE READY</span> &bull;
+                            <span class="mx-4">SCALABLE ARCHITECTURE</span> &bull;
+                            <span class="mx-4">CLEAN CODE</span> &bull;
+                            <span class="mx-4">MOBILE FIRST</span> &bull;
+                            <span class="mx-4">FAST DEPLOYMENT</span> &bull;
+                            <span class="mx-4">TEAM COLLABORATION</span> &bull;
+                            <span class="mx-4">CLOUD INTEGRATION</span> &bull;
+                             <span class="mx-4">INNOVATIVE SOLUTIONS</span> &bull;
+                            <span class="mx-4">MODERN DESIGN</span> &bull;
+                            <span class="mx-4">HIGH PERFORMANCE</span> &bull;
+                            <span class="mx-4">USER FOCUSED</span> &bull;
+                            <span class="mx-4">ALWAYS EVOLVING</span> &bull;
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="page-phone" class="page-content hidden">
+                 <section class="text-center">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-4 leading-tight">Chrome Phone Integration</h1>
+                    <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-10">See our software in action on
+                        mobile. Seamless, powerful, and always in sync.</p>
+                    <div
+                        class="relative w-full max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden aspect-video mb-16">
+                        <iframe class="absolute top-0 left-0 w-full h-full"
+                            src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen></iframe>
+                    </div>
+                </section>
+                <section>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="bg-white/5 p-6 rounded-2xl border border-white/10"><img
+                                src="https://placehold.co/600x400/5B21B6/FFFFFF?text=Mobile+View+1" alt="Mobile View 1"
+                                class="rounded-lg mb-4 w-full h-48 object-cover">
+                            <h3 class="text-xl font-bold mb-2">Dashboard on the Go</h3>
+                            <p class="text-gray-400">Access all your key metrics from our streamlined mobile dashboard.
+                            </p>
+                        </div>
+                        <div class="bg-white/5 p-6 rounded-2xl border border-white/10"><img
+                                src="https://placehold.co/600x400/1D4ED8/FFFFFF?text=Mobile+View+2" alt="Mobile View 2"
+                                class="rounded-lg mb-4 w-full h-48 object-cover">
+                            <h3 class="text-xl font-bold mb-2">Real-time Editing</h3>
+                            <p class="text-gray-400">Make changes and collaborate with your team, no matter where you
+                                are.</p>
+                        </div>
+                        <div class="bg-white/5 p-6 rounded-2xl border border-white/10"><img
+                                src="https://placehold.co/600x400/BE123C/FFFFFF?text=Mobile+View+3" alt="Mobile View 3"
+                                class="rounded-lg mb-4 w-full h-48 object-cover">
+                            <h3 class="text-xl font-bold mb-2">Secure Notifications</h3>
+                            <p class="text-gray-400">Stay updated with important alerts delivered securely to your
+                                device.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="flex flex-col md:flex-row items-center gap-12 py-10 my-24">
+                    <div class="md:w-1/2 text-center md:text-left">
+                        <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">In-Depth Video Guides</h1>
+                        <p class="text-lg text-gray-300 mb-6">
+                            Explore the full potential of our software with these detailed video tutorials. From basic
+                            setup to advanced features, we've got you covered.
+                        </p>
+                        <ul class="space-y-3 text-gray-300 text-left mb-8 inline-block">
+                            <li class="flex items-center"><svg class="w-5 h-5 mr-2 text-green-400" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>Getting Started Guide</li>
+                            <li class="flex items-center"><svg class="w-5 h-5 mr-2 text-green-400" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>Advanced Collaboration Tools</li>
+                            <li class="flex items-center"><svg class="w-5 h-5 mr-2 text-green-400" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>Mobile Sync & Integration</li>
+                        </ul>
+                        <br>
+                        <a href="#"
+                            class="bg-white text-gray-900 font-semibold px-6 py-3 rounded-full hover:bg-gray-200 transition-colors">
+                            View All Tutorials
+                        </a>
+                    </div>
+                    <div class="md:w-1/2 w-full">
+                        <div id="phone-video-guides-slider"
+                            class="relative w-full max-w-md mx-auto rounded-2xl shadow-2xl overflow-hidden aspect-[4/3]">
+                            <div class="slider-track flex">
+                                <div class="w-full flex-shrink-0"><img
+                                        src="https://placehold.co/800x600/BE123C/FFFFFF?text=Video+Thumb+1"
+                                        alt="Video Thumbnail 1" class="w-full h-full object-cover"></div>
+                                <div class="w-full flex-shrink-0"><img
+                                        src="https://placehold.co/800x600/5B21B6/FFFFFF?text=Video+Thumb+2"
+                                        alt="Video Thumbnail 2" class="w-full h-full object-cover"></div>
+                                <div class="w-full flex-shrink-0"><img
+                                        src="https://placehold.co/800x600/1D4ED8/FFFFFF?text=Video+Thumb+3"
+                                        alt="Video Thumbnail 3" class="w-full h-full object-cover"></div>
+                            </div>
+                            <div id="phone-video-guides-slider-dots"
+                                class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="page-ldplayer" class="page-content hidden">
+                <section class="mb-24 text-center">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-4 leading-tight">The Future of Emulation is Here</h1>
+                    <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-10">Experience unparalleled
+                        performance and design with our next-generation LD-Player software.</p>
+                    <div id="ld-slider"
+                        class="relative w-full max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden aspect-video">
+                        <div class="slider-track flex">
+                            <div class="w-full flex-shrink-0"><img
+                                    src="https://placehold.co/1280x720/0c4a6e/FFFFFF?text=LD-Player+Feature+1"
+                                    alt="LD-Player Screenshot 1" class="w-full h-full object-cover"></div>
+                            <div class="w-full flex-shrink-0"><img
+                                    src="https://placehold.co/1280x720/047857/FFFFFF?text=LD-Player+Feature+2"
+                                    alt="LD-Player Screenshot 2" class="w-full h-full object-cover"></div>
+                            <div class="w-full flex-shrink-0"><img
+                                    src="https://placehold.co/1280x720/6d28d9/FFFFFF?text=LD-Player+Feature+3"
+                                    alt="LD-Player Screenshot 3" class="w-full h-full object-cover"></div>
+                        </div>
+                        <div id="ld-slider-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3">
+                        </div>
+                    </div>
+                </section>
+                <section class="mb-24">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div
+                            class="bg-white/5 p-6 rounded-2xl border border-white/10 transform hover:-translate-y-2 transition-transform duration-300 ease-in-out">
+                            <img src="https://placehold.co/600x400/0c4a6e/FFFFFF?text=High+FPS" alt="High FPS"
+                                class="rounded-lg mb-4 w-full h-48 object-cover">
+                            <h3 class="text-xl font-bold mb-2">High FPS Gaming</h3>
+                            <p class="text-gray-400 mb-4">Run the most demanding mobile games at high frame rates for a
+                                smooth experience.</p><a href="#"
+                                class="text-blue-400 font-semibold hover:text-blue-300 transition-colors">Learn More
+                                &rarr;</a>
+                        </div>
+                        <div
+                            class="bg-white/5 p-6 rounded-2xl border border-white/10 transform hover:-translate-y-2 transition-transform duration-300 ease-in-out">
+                            <img src="https://placehold.co/600x400/047857/FFFFFF?text=Multi-Instance"
+                                alt="Multi-Instance" class="rounded-lg mb-4 w-full h-48 object-cover">
+                            <h3 class="text-xl font-bold mb-2">Multi-Instance Sync</h3>
+                            <p class="text-gray-400 mb-4">Run multiple instances of LD-Player simultaneously and sync
+                                their operations.</p><a href="#"
+                                class="text-blue-400 font-semibold hover:text-blue-300 transition-colors">See How
+                                &rarr;</a>
+                        </div>
+                        <div
+                            class="bg-white/5 p-6 rounded-2xl border border-white/10 transform hover:-translate-y-2 transition-transform duration-300 ease-in-out">
+                            <img src="https://placehold.co/600x400/6d28d9/FFFFFF?text=Macros" alt="Macros"
+                                class="rounded-lg mb-4 w-full h-48 object-cover">
+                            <h3 class="text-xl font-bold mb-2">Macro & Scripting</h3>
+                            <p class="text-gray-400 mb-4">Automate repetitive tasks with our powerful macro recorder and
+                                scripting tools.</p><a href="#"
+                                class="text-blue-400 font-semibold hover:text-blue-300 transition-colors">Explore Macros
+                                &rarr;</a>
+                        </div>
+                    </div>
+                </section>
+                <section class="text-center mb-24">
+                    <h2 class="text-3xl font-bold mb-4">LD-Player In Action</h2>
+                    <p class="text-lg text-gray-300 max-w-2xl mx-auto mb-8">See how LD-Player transforms your gaming and
+                        app experience on PC.</p>
+                    <div class="relative w-full max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden aspect-video">
+                        <iframe class="absolute top-0 left-0 w-full h-full"
+                            src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen></iframe>
+                    </div>
+                </section>
+            </div>
+
+            <div id="page-download" class="page-content hidden">
+                 <section class="flex flex-col md:flex-row items-center gap-12 py-10 mb-24">
+                    <div class="md:w-1/2 text-center md:text-left">
+                        <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">Download Our Software</h1>
+                        <p class="text-lg text-gray-300 mb-6">
+                            Get started with our powerful tools today. The download includes everything you need to enahnce your productivity and workflows.
+                        </p>
+                        <ul class="space-y-3 text-gray-300 text-left mb-8 inline-block">
+                            <li class="flex items-center"><svg class="w-5 h-5 mr-2 text-green-400" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>Full-featured desktop client</li>
+                            <li class="flex items-center"><svg class="w-5 h-5 mr-2 text-green-400" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>Mobile synchronization apps</li>
+                            <li class="flex items-center"><svg class="w-5 h-5 mr-2 text-green-400" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>Browser extensions for Chrome</li>
+                        </ul>
+                        <br>
+                        <a href="#"
+                            class="bg-white text-gray-900 font-semibold px-6 py-3 rounded-full hover:bg-gray-200 transition-colors inline-flex items-center gap-2">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M5 20h14v-2H5v2zm7-18v12l5-5h-3V4h-4v5H7l5 5V2z" />
+                            </svg>
+                            Download Now
+                        </a>
+                    </div>
+                    <div class="md:w-1/2 w-full">
+                        <div id="download-video-guides-slider"
+                            class="relative w-full max-w-md mx-auto rounded-2xl shadow-2xl overflow-hidden aspect-[4/3]">
+                            <div class="slider-track flex">
+                                <div class="w-full flex-shrink-0"><img
+                                        src="https://placehold.co/800x600/BE123C/FFFFFF?text=Software+Box"
+                                        alt="Video Thumbnail 1" class="w-full h-full object-cover"></div>
+                                <div class="w-full flex-shrink-0"><img
+                                        src="https://placehold.co/800x600/5B21B6/FFFFFF?text=UI+Showcase"
+                                        alt="Video Thumbnail 2" class="w-full h-full object-cover"></div>
+                                <div class="w-full flex-shrink-0"><img
+                                        src="https://placehold.co/800x600/1D4ED8/FFFFFF?text=Feature+Highlight"
+                                        alt="Video Thumbnail 3" class="w-full h-full object-cover"></div>
+                            </div>
+                            <div id="download-video-guides-slider-dots"
+                                class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3"></div>
+                        </div>
+                    </div>
+                </section>
+                <section class="mb-24">
+                    <h2 class="text-3xl font-bold mb-8 text-center">What's Included</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="bg-white/5 p-6 rounded-2xl border border-white/10"><img
+                                src="https://placehold.co/600x400/5B21B6/FFFFFF?text=Feature+J" alt="Feature J"
+                                class="rounded-lg mb-4 w-full h-48 object-cover">
+                            <h3 class="text-xl font-bold mb-2">Advanced Analytics</h3>
+                            <p class="text-gray-400">Unlock deep insights into your data with our powerful analytics module.</p>
+                        </div>
+                        <div class="bg-white/5 p-6 rounded-2xl border border-white/10"><img
+                                src="https://placehold.co/600x400/1D4ED8/FFFFFF?text=Feature+K" alt="Feature K"
+                                class="rounded-lg mb-4 w-full h-48 object-cover">
+                            <h3 class="text-xl font-bold mb-2">Team Collaboration</h3>
+                            <p class="text-gray-400">Tools designed to make team projects more efficient and transparent.</p>
+                        </div>
+                        <div class="bg-white/5 p-6 rounded-2xl border border-white/10"><img
+                                src="https://placehold.co/600x400/BE123C/FFFFFF?text=Feature+L" alt="Feature L"
+                                class="rounded-lg mb-4 w-full h-48 object-cover">
+                            <h3 class="text-xl font-bold mb-2">Cloud Backup</h3>
+                            <p class="text-gray-400">Never lose your work with automatic, secure cloud backups.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="page-videos" class="page-content hidden">
+                <section class="flex flex-col md:flex-row items-center gap-12 py-10 mb-24">
+                    <div class="md:w-1/2 text-center md:text-left">
+                        <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">In-Depth Video Guides</h1>
+                        <p class="text-lg text-gray-300 mb-6">
+                            Explore the full potential of our software with these detailed video tutorials. From basic
+                            setup to advanced features, we've got you covered.
+                        </p>
+                        <ul class="space-y-3 text-gray-300 text-left mb-8 inline-block">
+                            <li class="flex items-center"><svg class="w-5 h-5 mr-2 text-green-400" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>Getting Started Guide</li>
+                            <li class="flex items-center"><svg class="w-5 h-5 mr-2 text-green-400" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>Advanced Collaboration Tools</li>
+                            <li class="flex items-center"><svg class="w-5 h-5 mr-2 text-green-400" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>Mobile Sync & Integration</li>
+                        </ul>
+                        <br>
+                        <a href="#"
+                            class="bg-white text-gray-900 font-semibold px-6 py-3 rounded-full hover:bg-gray-200 transition-colors">
+                            View All Tutorials
+                        </a>
+                    </div>
+                    <div class="md:w-1/2 w-full">
+                        <div id="videos-page-slider"
+                            class="relative w-full max-w-md mx-auto rounded-2xl shadow-2xl overflow-hidden aspect-[4/3]">
+                            <div class="slider-track flex">
+                                <div class="w-full flex-shrink-0"><img
+                                        src="https://placehold.co/800x600/BE123C/FFFFFF?text=Video+Thumb+1"
+                                        alt="Video Thumbnail 1" class="w-full h-full object-cover"></div>
+                                <div class="w-full flex-shrink-0"><img
+                                        src="https://placehold.co/800x600/5B21B6/FFFFFF?text=Video+Thumb+2"
+                                        alt="Video Thumbnail 2" class="w-full h-full object-cover"></div>
+                                <div class="w-full flex-shrink-0"><img
+                                        src="https://placehold.co/800x600/1D4ED8/FFFFFF?text=Video+Thumb+3"
+                                        alt="Video Thumbnail 3" class="w-full h-full object-cover"></div>
+                            </div>
+                            <div id="videos-page-slider-dots"
+                                class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3"></div>
+                        </div>
+                    </div>
+                </section>
+                <section class="text-center mb-24">
+                    <h2 class="text-3xl font-bold mb-4">Product Showcase</h2>
+                    <p class="text-lg text-gray-300 max-w-2xl mx-auto mb-8">A deep dive into our main product.</p>
+                    <div class="relative w-full max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden aspect-video">
+                        <iframe class="absolute top-0 left-0 w-full h-full"
+                            src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen></iframe>
+                    </div>
+                </section>
+            </div>
+
+            <div id="page-contact" class="page-content hidden">
+                <section class="text-center mb-24">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-4 leading-tight">Contact the Founder</h1>
+                    <p class="text-lg text-gray-300 max-w-2xl mx-auto mb-12">Connect directly with the vision behind the
+                        project.</p>
+                    <div class="flex justify-center mb-8">
+                        <div class="w-64">
+                            <div class="flip-card">
+                                <div class="flip-card-inner">
+                                    <div class="flip-card-front"><img
+                                            src="https://placehold.co/400x600/ffffff/070527?text=Founder" alt="Founder"
+                                            class="w-full h-full object-cover"></div>
+                                    <div class="flip-card-back">
+                                        <h4 class="text-xl font-bold">Dev Max Tools</h4>
+                                        <p class="text-gray-400">Founder & Lead Engineer</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-center space-x-6">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i
+                                class="fab fa-telegram fa-2x"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i
+                                class="fab fa-facebook fa-2x"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i
+                                class="fab fa-tiktok fa-2x"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i
+                                class="fab fa-youtube fa-2x"></i></a>
+                    </div>
+                </section>
+
+                <section class="text-center">
+                    <h2 class="text-3xl font-bold mb-10">What Our Users Say</h2>
+                    <div id="reviews-slider" class="relative w-full max-w-4xl mx-auto overflow-hidden">
+                        <div class="slider-track flex">
+                            <div class="w-full flex-shrink-0 px-4">
+                                <div class="bg-white/5 p-8 rounded-2xl border border-white/10 h-full"><img
+                                        src="https://placehold.co/100x100/ffffff/000000?text=P1" alt="User 1"
+                                        class="w-20 h-20 rounded-full mx-auto mb-4">
+                                    <div class="text-yellow-400 mb-2"><i class="fas fa-star"></i><i
+                                            class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                            class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                                    <p class="text-gray-300 mb-4">"This software changed the game for me. Incredibly
+                                        intuitive and powerful."</p>
+                                    <h4 class="font-bold text-lg">Jessica L.</h4>
+                                </div>
+                            </div>
+                            <div class="w-full flex-shrink-0 px-4">
+                                <div class="bg-white/5 p-8 rounded-2xl border border-white/10 h-full"><img
+                                        src="https://placehold.co/100x100/ffffff/000000?text=P2" alt="User 2"
+                                        class="w-20 h-20 rounded-full mx-auto mb-4">
+                                    <div class="text-yellow-400 mb-2"><i class="fas fa-star"></i><i
+                                            class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                            class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+                                    <p class="text-gray-300 mb-4">"Absolutely essential for my workflow. The speed is
+                                        just unbelievable."</p>
+                                    <h4 class="font-bold text-lg">Mike P.</h4>
+                                </div>
+                            </div>
+                            <div class="w-full flex-shrink-0 px-4">
+                                <div class="bg-white/5 p-8 rounded-2xl border border-white/10 h-full"><img
+                                        src="https://placehold.co/100x100/ffffff/000000?text=P3" alt="User 3"
+                                        class="w-20 h-20 rounded-full mx-auto mb-4">
+                                    <div class="text-yellow-400 mb-2"><i class="fas fa-star"></i><i
+                                            class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                            class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                                    <p class="text-gray-300 mb-4">"The cross-platform sync is seamless. I can work from
+                                        anywhere."</p>
+                                    <h4 class="font-bold text-lg">Chloe W.</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="reviews-slider-dots"
+                            class="absolute -bottom-8 left-1/2 -translate-x-1/2 flex space-x-3"></div>
+                    </div>
+                </section>
+            </div>
+
+
+        </div>
+    </main>
+
+    <footer class="bg-black/20 border-t border-white/10 mt-auto">
+        <div class="container mx-auto max-w-6xl px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center text-center md:text-left">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-lg font-bold">Dev Max Tools</p>
+                    <p class="text-sm text-gray-400">Innovating for a better future.</p>
+                </div>
+                <div class="flex space-x-6 mb-4 md:mb-0">
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors">Privacy Policy</a>
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors">Terms of Service</a>
+                    <a href="#" data-page="page-contact"
+                        class="nav-link text-gray-300 hover:text-white transition-colors">Contact</a>
+                </div>
+                <div class="text-sm text-gray-500">
+                    &copy; 2024 Dev Max Tools Inc. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const light = document.getElementById('cursor-light');
+            const particleContainer = document.getElementById('particle-container');
+            const bubblesContainer = document.querySelector('.bubbles');
+
+            let mouseX = 0;
+            let mouseY = 0;
+            let isMouseMoving = false;
+            let lastMoveTime = Date.now();
+
+            // --- 1. Mouse Movement Effects ---
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+
+                if (light) {
+                    light.style.transform = `translate(${mouseX - light.offsetWidth / 2}px, ${mouseY - light.offsetHeight / 2}px)`;
+                }
+
+                createMovingParticles(mouseX, mouseY);
+                isMouseMoving = true;
+                lastMoveTime = Date.now();
+            });
+
+            // Check if mouse has stopped
+            setInterval(() => {
+                if (Date.now() - lastMoveTime > 100) { // 100ms delay to consider it stopped
+                    isMouseMoving = false;
+                }
+            }, 100);
+
+            function createMovingParticles(x, y) {
+                if (!particleContainer) return;
+                const numberOfParticles = 3; // Create a consistent number for a smoother trail
+                for (let i = 0; i < numberOfParticles; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    
+                    const size = Math.random() * 6 + 4; // Smoke particles are a bit larger
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+
+                    const angle = Math.random() * Math.PI * 2;
+                    const startX = x + (Math.random() - 0.5) * 10;
+                    const startY = y + (Math.random() - 0.5) * 10;
+                    particle.style.left = `${x}px`;
+                    particle.style.top = `${y}px`;
+                    particle.style.setProperty('--x-start', '0px');
+                    particle.style.setProperty('--y-start', '0px');
+                    
+                    const travelDistance = Math.random() * 40 + 20;
+                    const endX = Math.cos(angle) * travelDistance;
+                    const endY = Math.sin(angle) * travelDistance;
+                    particle.style.setProperty('--x-end', `${endX}px`);
+                    particle.style.setProperty('--y-end', `${endY}px`);
+
+                    if (Math.random() < 0.8) { // 80% chance for golden smoke
+                        particle.classList.add('golden');
+                        particle.style.opacity = Math.random() * 0.5 + 0.2; // Softer opacity
+                        particle.style.filter = `blur(${Math.random() * 3}px)`; // Smoky effect
+                    } else { // 20% chance for a star
+                        particle.classList.add('star');
+                        particle.style.opacity = Math.random() * 0.7 + 0.3; // Stars are brighter
+                    }
+
+                    particleContainer.appendChild(particle);
+
+                    particle.addEventListener('animationend', () => {
+                        particle.remove();
+                    });
+                }
+            }
+
+            // --- Persistent Golden Particle Emission (when mouse stops) ---
+            function createStationaryParticles() {
+                if (!particleContainer || isMouseMoving) return;
+
+                const particle = document.createElement('div');
+                particle.classList.add('particle', 'golden');
+                const size = Math.random() * 3 + 2; // Smaller stationary particles
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                particle.style.left = `${mouseX}px`;
+                particle.style.top = `${mouseY}px`;
+                particle.style.setProperty('--x-start', '0px');
+                particle.style.setProperty('--y-start', '0px');
+                
+                const angle = Math.random() * Math.PI * 2;
+                const travelDistance = Math.random() * 20 + 5;
+                const endX = Math.cos(angle) * travelDistance;
+                const endY = Math.sin(angle) * travelDistance;
+                particle.style.setProperty('--x-end', `${endX}px`);
+                particle.style.setProperty('--y-end', `${endY}px`);
+
+                particle.style.opacity = Math.random() * 0.4 + 0.3;
+                particleContainer.appendChild(particle);
+
+                particle.addEventListener('animationend', () => {
+                    particle.remove();
+                });
+            }
+
+            // Emit stationary particles periodically
+            setInterval(createStationaryParticles, 150);
+
+
+            // --- 2. OPTIMIZED Bubble Animation ---
+            function createBubble() {
+                if (!bubblesContainer) return;
+                const bubble = document.createElement('div');
+                const size = Math.random() * 80 + 20;
+                bubble.classList.add('bubble');
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.animationDuration = `${Math.random() * 15 + 10}s`;
+                bubble.style.animationDelay = `${Math.random() * 5}s`;
+                bubblesContainer.appendChild(bubble);
+
+                setTimeout(() => bubble.remove(), 25000);
+            }
+            
+            setInterval(createBubble, 350);
+
+            // --- 3. Page Navigation & Mobile Menu ---
+            const pages = document.querySelectorAll('.page-content');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const logoLink = document.getElementById('logo-link');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            function showPage(pageId) {
+                const targetPage = document.getElementById(pageId);
+                if (!targetPage) return;
+
+                pages.forEach(page => {
+                    if (page.id !== pageId) {
+                        page.classList.add('hidden');
+                        page.classList.remove('fade-in');
+                    }
+                });
+
+                targetPage.classList.remove('hidden');
+                void targetPage.offsetWidth;
+                targetPage.classList.add('fade-in');
+                
+                mobileMenu.classList.add('hidden');
+                window.scrollTo(0, 0);
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const pageId = this.getAttribute('data-page');
+                    if (pageId) {
+                        showPage(pageId);
+                    }
+                });
+            });
+
+            logoLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPage('page-home');
+            });
+
+            // --- 4. Generic Slider Initializer ---
+            function initializeSlider(sliderId, dotsId) {
+                const slider = document.getElementById(sliderId);
+                if (!slider) return;
+
+                const sliderTrack = slider.querySelector('.slider-track');
+                const slides = Array.from(sliderTrack.children);
+                const dotsContainer = document.getElementById(dotsId);
+
+                if (!sliderTrack || slides.length === 0 || !dotsContainer) return;
+
+                const slideCount = slides.length;
+                let currentIndex = 0;
+                let autoPlayInterval;
+
+                dotsContainer.innerHTML = '';
+
+                for (let i = 0; i < slideCount; i++) {
+                    const dot = document.createElement('button');
+                    dot.classList.add('w-2.5', 'h-2.5', 'rounded-full', 'bg-white/40', 'transition-all', 'duration-300');
+                    dot.addEventListener('click', () => {
+                        goToSlide(i);
+                    });
+                    dotsContainer.appendChild(dot);
+                }
+
+                const dots = Array.from(dotsContainer.children);
+
+                function updateDots() {
+                    dots.forEach((dot, index) => {
+                        dot.classList.toggle('bg-white', index === currentIndex);
+                        dot.classList.toggle('w-4', index === currentIndex);
+                        dot.classList.toggle('bg-white/40', index !== currentIndex);
+                    });
+                }
+
+                function goToSlide(index) {
+                    if (index < 0 || index >= slideCount) return;
+                    currentIndex = index;
+                    sliderTrack.style.transform = `translateX(-${currentIndex * 100}%)`;
+                    updateDots();
+                    resetAutoPlay();
+                }
+
+                function nextSlide() {
+                    currentIndex = (currentIndex + 1) % slideCount;
+                    goToSlide(currentIndex);
+                }
+                
+                function resetAutoPlay() {
+                    clearInterval(autoPlayInterval);
+                    autoPlayInterval = setInterval(nextSlide, 5000);
+                }
+
+                goToSlide(0);
+            }
+
+            // --- Initialize all sliders ---
+            initializeSlider('slider', 'slider-dots');
+            initializeSlider('phone-video-guides-slider', 'phone-video-guides-slider-dots');
+            initializeSlider('ld-slider', 'ld-slider-dots');
+            initializeSlider('videos-page-slider', 'videos-page-slider-dots');
+            initializeSlider('download-video-guides-slider', 'download-video-guides-slider-dots');
+            initializeSlider('reviews-slider', 'reviews-slider-dots');
+            
+            // --- Initialize to show the Home page first ---
+            showPage('page-home');
+        });
+    </script>
+
+</body>
+</html>
